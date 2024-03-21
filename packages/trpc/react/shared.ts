@@ -11,6 +11,7 @@ export const ENDPOINTS = [
   "bookings",
   "deploymentSetup",
   "dsync",
+  "bookingLimits",
   "eventTypes",
   "features",
   "insights",

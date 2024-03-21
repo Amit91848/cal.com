@@ -300,6 +300,7 @@ model User {
   movedToProfileId           Int?
   movedToProfile             Profile?                     @relation("moved_to_profile", fields: [movedToProfileId], references: [id], onDelete: SetNull)
   secondaryEmails            SecondaryEmail[]
+  bookingLimits              BookingLimits?
 
   @@unique([email])
   @@unique([email, username])
@@ -1250,6 +1251,31 @@ model DSyncTeamGroupMapping {
   groupName      String
 
   @@unique([teamId, groupName])
+}
+
+model BookingLimits {
+  id Int @id @default(autoincrement())
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int  @unique
+
+  // periodType                           PeriodType              @default(UNLIMITED)
+  // /// @zod.custom(imports.coerceToDate)
+  // periodStartDate                      DateTime?
+  // /// @zod.custom(imports.coerceToDate)
+  // periodEndDate                        DateTime?
+  // periodDays                           Int?
+  // periodCountCalendarDays              Boolean?
+
+  /// @zod.min(0)
+  // minimumBookingNotice                 Int                     @default(120)
+  // beforeEventBuffer                    Int                     @default(0)
+  // afterEventBuffer                     Int                     @default(0)
+
+  /// @zod.custom(imports.intervalLimitsType)
+  bookingLimits Json?
+  /// @zod.custom(imports.intervalLimitsType)
+  // durationLimits                       Json?
 }
 
 model SecondaryEmail {

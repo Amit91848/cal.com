@@ -2312,6 +2312,7 @@
   "group_name": "Group Name",
   "routers": "Routers",
   "primary": "Primary",
+  "bookings_page_description": "Manage settings for Cal.com bookings",
   "make_primary": "Make primary",
   "add_email": "Add Email",
   "add_email_description": "Add an email address to replace your primary or to use as an alternative email on your event types.",
