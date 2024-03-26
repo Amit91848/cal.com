@@ -1,9 +1,4 @@
-import type { Prisma } from "@prisma/client";
-
-import { validateIntervalLimitOrder } from "@calcom/lib";
 import { prisma } from "@calcom/prisma";
-
-import { TRPCError } from "@trpc/server";
 
 import type { TrpcSessionUser } from "../../../trpc";
 import type { TUpdateInputSchema } from "./update.schema";
@@ -29,20 +24,25 @@ export const updateHandler = async ({ ctx, input }: UpdateOptions) => {
   //   return null;
   // }
 
-  const data: Prisma.BookingLimitsUpdateInput = {
-    ...rest,
-  };
+  if (!id) {
+    return prisma.bookingLimits.create({
+      data: {
+        ...input,
+        userId: ctx.user.id,
+      },
+    });
+  }
 
   // if (periodType) {
   //   data.periodType = handlePeriodType(periodType);
   // }
 
-  if (bookingLimits) {
-    const isValid = validateIntervalLimitOrder(bookingLimits);
-    if (!isValid)
-      throw new TRPCError({ code: "BAD_REQUEST", message: "Booking limits must be in ascending order." });
-    data.bookingLimits = bookingLimits;
-  }
+  // if (bookingLimits) {
+  //   const isValid = validateIntervalLimitOrder(bookingLimits);
+  //   if (!isValid)
+  //     throw new TRPCError({ code: "BAD_REQUEST", message: "Booking limits must be in ascending order." });
+  //   data.bookingLimits = bookingLimits;
+  // }
 
   // if (durationLimits) {
   //   const isValid = validateIntervalLimitOrder(durationLimits);
@@ -58,18 +58,20 @@ export const updateHandler = async ({ ctx, input }: UpdateOptions) => {
   //   data,
   // });
 
-  return await prisma.bookingLimits.upsert({
-    where: {
-      id: id,
-      userId: ctx.user.id,
-    },
-    create: {
-      ...data,
-    },
-    update: {
-      ...data,
-    },
-  });
+  // return await prisma.bookingLimits.upsert({
+  //   where: {
+  //     id: id,
+  //     userId: ctx.user.id,
+  //   },
+  //   create: {
+  //     ...data,
+  //   },
+  //   update: {
+  //     ...data,
+  //   },
+  // });
+
+  return "WIP";
 };
 
 export default updateHandler;
