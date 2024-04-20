@@ -15,7 +15,7 @@ import { DeleteBulkUsers } from "./BulkActions/DeleteBulkUsers";
 import { TeamListBulkAction } from "./BulkActions/TeamList";
 import { ChangeUserRoleModal } from "./ChangeUserRoleModal";
 import { DeleteMemberModal } from "./DeleteMemberModal";
-import { EditUserSheet } from "./EditSheet/EditUserSheet";
+import { EditUserSheetModal } from "./EditSheet/EditUserSheetModal";
 import { ImpersonationMemberModal } from "./ImpersonationMemberModal";
 import { InviteMemberModal } from "./InviteMemberModal";
 import { TableActions } from "./UserTableActions";
@@ -64,7 +64,7 @@ export type Action =
       type: "CLOSE_MODAL";
     };
 
-const initialState: State = {
+export const initialState: State = {
   changeMemberRole: {
     showModal: false,
   },
@@ -82,7 +82,7 @@ const initialState: State = {
   },
 };
 
-function reducer(state: State, action: Action): State {
+export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "SET_CHANGE_MEMBER_ROLE_ID":
       return { ...state, changeMemberRole: action.payload };
@@ -383,7 +383,7 @@ export function UserListTable() {
       {state.inviteMember.showModal && <InviteMemberModal dispatch={dispatch} />}
       {state.impersonateMember.showModal && <ImpersonationMemberModal dispatch={dispatch} state={state} />}
       {state.changeMemberRole.showModal && <ChangeUserRoleModal dispatch={dispatch} state={state} />}
-      {state.editSheet.showModal && <EditUserSheet dispatch={dispatch} state={state} />}
+      {state.editSheet.showModal && <EditUserSheetModal dispatch={dispatch} state={state} />}
     </>
   );
 }

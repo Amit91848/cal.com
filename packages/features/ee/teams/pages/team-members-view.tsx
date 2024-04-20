@@ -18,6 +18,7 @@ import InviteLinkSettingsModal from "../components/InviteLinkSettingsModal";
 import MakeTeamPrivateSwitch from "../components/MakeTeamPrivateSwitch";
 import MemberInvitationModal from "../components/MemberInvitationModal";
 import MemberListItem from "../components/MemberListItem";
+import MemberListTable from "../components/MemberListTable";
 import TeamInviteList from "../components/TeamInviteList";
 
 type Team = RouterOutputs["viewer"]["teams"]["get"];
@@ -178,9 +179,10 @@ const MembersView = () => {
               </>
             )}
 
-            {((team?.isPrivate && isAdmin) || !team?.isPrivate || isOrgAdminOrOwner) && (
+            {team && ((team?.isPrivate && isAdmin) || !team?.isPrivate || isOrgAdminOrOwner) && (
               <>
                 <MembersList team={team} isOrgAdminOrOwner={isOrgAdminOrOwner} />
+                <MemberListTable team={team} isOrgAdminOrOwner={isOrgAdminOrOwner} />
               </>
             )}
 

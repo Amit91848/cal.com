@@ -38,6 +38,12 @@ export async function getTeamWithMembers(args: {
     email: true,
     name: true,
     avatarUrl: true,
+    schedules: {
+      select: {
+        name: true,
+      },
+    },
+    timeZone: true,
     id: true,
     bio: true,
     teams: {
@@ -46,6 +52,7 @@ export async function getTeamWithMembers(args: {
           select: {
             slug: true,
             id: true,
+            name: true,
           },
         },
       },

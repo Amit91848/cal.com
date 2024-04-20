@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Dispatch } from "react";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -7,7 +6,7 @@ import { shallow } from "zustand/shallow";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { MembershipRole } from "@calcom/prisma/enums";
-import { trpc, type RouterOutputs } from "@calcom/trpc/react";
+import { trpc } from "@calcom/trpc/react";
 import {
   Form,
   TextField,
@@ -15,12 +14,11 @@ import {
   TextAreaField,
   TimezoneSelect,
   Label,
-  showToast,
   Avatar,
   ImageUploader,
 } from "@calcom/ui";
 
-import type { Action } from "../UserListTable";
+import type { SheetUser } from "./EditUserSheet";
 import { useEditMode } from "./store";
 
 type MembershipOption = {
@@ -29,6 +27,7 @@ type MembershipOption = {
 };
 
 const editSchema = z.object({
+  userId: z.number(),
   name: z.string(),
   username: z.string(),
   email: z.string().email(),
@@ -40,22 +39,23 @@ const editSchema = z.object({
   // teams: z.array(z.string()),
 });
 
-type EditSchema = z.infer<typeof editSchema>;
+export type EditSchema = z.infer<typeof editSchema>;
 
 export function EditForm({
   selectedUser,
   avatarUrl,
   domainUrl,
-  dispatch,
-}: {
-  selectedUser: RouterOutputs["viewer"]["organizations"]["getUser"];
+  updateFunction,
+}: // dispatch,
+{
+  selectedUser: SheetUser;
   avatarUrl: string;
   domainUrl: string;
-  dispatch: Dispatch<Action>;
+  updateFunction: (update: EditSchema) => void;
+  // dispatch: Dispatch<Action>;
 }) {
   const [setMutationLoading] = useEditMode((state) => [state.setMutationloading], shallow);
   const { t } = useLocale();
-  const utils = trpc.useUtils();
   const form = useForm({
     resolver: zodResolver(editSchema),
     defaultValues: {
@@ -66,6 +66,7 @@ export function EditForm({
       bio: selectedUser?.bio ?? "",
       role: selectedUser?.role ?? "",
       timeZone: selectedUser?.timeZone ?? "",
+      userId: selectedUser?.id ?? "",
     },
   });
 
@@ -94,23 +95,23 @@ export function EditForm({
     return options;
   }, [t, isOwner]);
 
-  const mutation = trpc.viewer.organizations.updateUser.useMutation({
-    onSuccess: () => {
-      dispatch({ type: "CLOSE_MODAL" });
-      utils.viewer.organizations.listMembers.invalidate();
-      showToast(t("profile_updated_successfully"), "success");
-    },
-    onError: (error) => {
-      showToast(error.message, "error");
-    },
-    onSettled: () => {
-      /**
-       * /We need to do this as the submit button lives out side
-       *  the form for some complicated reason so we can't relay on mutationState
-       */
-      setMutationLoading(false);
-    },
-  });
+  // const mutation = trpc.viewer.organizations.updateUser.useMutation({
+  //   onSuccess: () => {
+  //     dispatch({ type: "CLOSE_MODAL" });
+  //     utils.viewer.organizations.listMembers.invalidate();
+  //     showToast(t("profile_updated_successfully"), "success");
+  //   },
+  //   onError: (error) => {
+  //     showToast(error.message, "error");
+  //   },
+  //   onSettled: () => {
+  //     /**
+  //      * /We need to do this as the submit button lives out side
+  //      *  the form for some complicated reason so we can't relay on mutationState
+  //      */
+  //     setMutationLoading(false);
+  //   },
+  // });
 
   const watchTimezone = form.watch("timeZone");
 
@@ -120,7 +121,7 @@ export function EditForm({
       id="edit-user-form"
       handleSubmit={(values) => {
         setMutationLoading(true);
-        mutation.mutate({
+        updateFunction({
           userId: selectedUser?.id ?? "",
           role: values.role,
           username: values.username,

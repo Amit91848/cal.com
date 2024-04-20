@@ -1,42 +1,53 @@
-import type { Dispatch } from "react";
-import { shallow } from "zustand/shallow";
-
-import { useOrgBranding } from "@calcom/ee/organizations/context/provider";
+import type { useOrgBranding } from "@calcom/ee/organizations/context/provider";
 import { WEBAPP_URL } from "@calcom/lib/constants";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import { trpc } from "@calcom/trpc/react";
+import type { MembershipRole } from "@calcom/prisma/enums";
 import { Avatar, Label, Loader, Sheet, SheetContent, SheetFooter, Skeleton } from "@calcom/ui";
 
-import type { Action, State } from "../UserListTable";
 import { DisplayInfo } from "./DisplayInfo";
+import type { EditSchema } from "./EditUserForm";
 import { EditForm } from "./EditUserForm";
 import { SheetFooterControls } from "./SheetFooterControls";
-import { useEditMode } from "./store";
 
-export function EditUserSheet({ state, dispatch }: { state: State; dispatch: Dispatch<Action> }) {
+export interface SheetUser {
+  // teams?: { accepted?: boolean; name?: string; id?: number, slug?: string | null }[];
+  name?: string | null;
+  username?: string | null;
+  email?: string;
+  bio?: string | null;
+  role?: MembershipRole;
+  timeZone?: string;
+  id?: number | string;
+}
+
+interface Props {
+  user?: SheetUser;
+  avatarURL: string;
+  schedulesNames?: string[];
+  teamNames?: string[];
+  isPending: boolean;
+  onOpenChange: () => void;
+  orgBranding?: ReturnType<typeof useOrgBranding>;
+  updateFunction: (update: EditSchema) => void;
+  editMode: boolean;
+}
+
+export function EditUserSheet({
+  user,
+  avatarURL,
+  schedulesNames,
+  teamNames,
+  isPending,
+  onOpenChange,
+  orgBranding,
+  updateFunction,
+  editMode,
+}: Props) {
   const { t } = useLocale();
-  const { user: selectedUser } = state.editSheet;
-  const orgBranding = useOrgBranding();
-  const [editMode, setEditMode] = useEditMode((state) => [state.editMode, state.setEditMode], shallow);
-  const { data: loadedUser, isPending } = trpc.viewer.organizations.getUser.useQuery({
-    userId: selectedUser?.id,
-  });
-
-  const avatarURL = `${orgBranding?.fullDomain ?? WEBAPP_URL}/${loadedUser?.username}/avatar.png`;
-
-  const schedulesNames = loadedUser?.schedules && loadedUser?.schedules.map((s) => s.name);
-  const teamNames =
-    loadedUser?.teams && loadedUser?.teams.map((t) => `${t.name} ${!t.accepted ? "(pending)" : ""}`);
-
   return (
-    <Sheet
-      open={true}
-      onOpenChange={() => {
-        setEditMode(false);
-        dispatch({ type: "CLOSE_MODAL" });
-      }}>
+    <Sheet open={true} onOpenChange={onOpenChange}>
       <SheetContent position="right" size="default">
-        {!isPending && loadedUser ? (
+        {!isPending && user ? (
           <div className="flex h-full flex-col">
             {!editMode ? (
               <div className="flex-grow">
@@ -44,31 +55,31 @@ export function EditUserSheet({ state, dispatch }: { state: State; dispatch: Dis
                   <Avatar
                     asChild
                     className="h-[36px] w-[36px]"
-                    alt={`${loadedUser?.name} avatar`}
+                    alt={`${user?.name} avatar`}
                     imageSrc={avatarURL}
                   />
                   <div className="space-between flex flex-col leading-none">
                     <Skeleton loading={isPending} as="p" waitForTranslation={false}>
                       <span className="text-emphasis text-lg font-semibold">
-                        {loadedUser?.name ?? "Nameless User"}
+                        {user?.name ?? "Nameless User"}
                       </span>
                     </Skeleton>
                     <Skeleton loading={isPending} as="p" waitForTranslation={false}>
                       <p className="subtle text-sm font-normal">
-                        {orgBranding?.fullDomain ?? WEBAPP_URL}/{loadedUser?.username}
+                        {orgBranding?.fullDomain ?? WEBAPP_URL}/{user?.username}
                       </p>
                     </Skeleton>
                   </div>
                 </div>
                 <div className="mt-6 flex flex-col space-y-5">
-                  <DisplayInfo label={t("email")} value={loadedUser?.email ?? ""} displayCopy />
+                  <DisplayInfo label={t("email")} value={user?.email ?? ""} displayCopy />
                   <DisplayInfo
                     label={t("bio")}
                     badgeColor="gray"
-                    value={loadedUser?.bio ? loadedUser?.bio : t("user_has_no_bio")}
+                    value={user?.bio ? user?.bio : t("user_has_no_bio")}
                   />
-                  <DisplayInfo label={t("role")} value={loadedUser?.role ?? ""} asBadge badgeColor="blue" />
-                  <DisplayInfo label={t("timezone")} value={loadedUser?.timeZone ?? ""} />
+                  <DisplayInfo label={t("role")} value={user?.role ?? ""} asBadge badgeColor="blue" />
+                  <DisplayInfo label={t("timezone")} value={user?.timeZone ?? ""} />
                   <div className="flex flex-col">
                     <Label className="text-subtle mb-1 text-xs font-semibold uppercase leading-none">
                       {t("availability_schedules")}
@@ -99,10 +110,10 @@ export function EditUserSheet({ state, dispatch }: { state: State; dispatch: Dis
             ) : (
               <div className="mb-4 flex-grow">
                 <EditForm
-                  selectedUser={loadedUser}
+                  selectedUser={user}
                   avatarUrl={avatarURL}
                   domainUrl={orgBranding?.fullDomain ?? WEBAPP_URL}
-                  dispatch={dispatch}
+                  updateFunction={updateFunction}
                 />
               </div>
             )}
