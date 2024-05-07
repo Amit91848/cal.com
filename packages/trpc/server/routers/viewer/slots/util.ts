@@ -167,6 +167,19 @@ export async function getEventType(
       onlyShowFirstAvailableSlot: true,
       periodCountCalendarDays: true,
       periodDays: true,
+      team: {
+        select: {
+          members: {
+            select: {
+              user: {
+                select: {
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
       metadata: true,
       schedule: {
         select: {
