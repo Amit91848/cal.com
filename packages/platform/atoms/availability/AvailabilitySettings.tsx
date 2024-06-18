@@ -1,5 +1,6 @@
+import debounce from "lodash/debounce";
 import { useMemo, useState, useEffect } from "react";
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch, useFormContext } from "react-hook-form";
 
 import dayjs from "@calcom/dayjs";
 import { DateOverrideInputDialog, DateOverrideList } from "@calcom/features/schedules";
@@ -27,6 +28,7 @@ import {
   TimezoneSelect as WebTimezoneSelect,
   Tooltip,
   VerticalDivider,
+  Input,
 } from "@calcom/ui";
 import { Icon } from "@calcom/ui";
 
@@ -76,6 +78,7 @@ type AvailabilitySettingsProps = {
     dateOverrides: { ranges: TimeRange[] }[];
     timeZone: string;
     schedule: Availability[];
+    timeBlock: string[];
   };
   travelSchedules?: RouterOutputs["viewer"]["getTravelSchedules"];
   handleDelete: () => void;
@@ -200,6 +203,63 @@ const DateOverride = ({
   );
 };
 
+const TimeBlock = () => {
+  const { t } = useLocale();
+  const { control, setValue } = useFormContext<AvailabilityFormValues>();
+  return (
+    <div className="p-6">
+      <h3 className="text-emphasis font-medium leading-6">{t("timeblock")} </h3>
+      <p className="text-subtle mb-4 text-sm">{t("timeblock_subtitle")}</p>
+      <div className="space-y-2">
+        <Controller
+          control={control}
+          name="timeBlock"
+          render={({ field: { value } }) => {
+            return (
+              <>
+                <ul>
+                  {value.map((v, index) => (
+                    <>
+                      <div className="flex gap-4">
+                        <Input
+                          value={v}
+                          onChange={(e) => {
+                            value[index] = e.target.value;
+                            setValue("timeBlock", value);
+                          }}
+                        />
+                        <Button
+                          StartIcon="x"
+                          onClick={() => {
+                            value.splice(index, 1);
+                            setValue("timeBlock", value);
+                          }}
+                        />
+                      </div>
+                      {value.length > 1 && index !== value.length - 1 && (
+                        <div className="my-1 text-sm">Or</div>
+                      )}
+                    </>
+                  ))}
+                </ul>
+                <Button
+                  color="secondary"
+                  StartIcon="plus"
+                  onClick={() => {
+                    value.push("");
+                    setValue("timeBlock", value);
+                  }}>
+                  {t("add")}
+                </Button>
+              </>
+            );
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 // Simplify logic by assuming this will never be opened on a large screen
 const SmallScreenSideBar = ({ open, children }: { open: boolean; children: JSX.Element }) => {
   return (
@@ -246,18 +306,20 @@ export function AvailabilitySettings({
   });
 
   useEffect(() => {
-    const subscription = form.watch(
-      (value, { name }) => {
-        console.log(name);
-        if (!!name && name.split(".")[0] !== "schedule" && name !== "name")
-          handleSubmit(value as AvailabilityFormValues);
-      },
-      {
-        ...schedule,
-        schedule: schedule.availability || [],
-      }
-    );
-    return () => subscription.unsubscribe();
+    const debouncedWatch = debounce((value, { name }) => {
+      if (!!name && name.split(".")[0] !== "schedule" && name !== "name") console.log("value: ", value);
+      handleSubmit(value as AvailabilityFormValues);
+    }, 500);
+
+    const subscription = form.watch(debouncedWatch, {
+      ...schedule,
+      schedule: schedule.availability || [],
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      debouncedWatch.cancel(); // Cancel any pending debounced calls
+    };
   }, [form.watch]);
 
   const [Shell, Schedule, TimezoneSelect] = useMemo(() => {
@@ -508,7 +570,14 @@ export function AvailabilitySettings({
               </div>
             </div>
             {!isPlatform ? (
-              <div className="border-subtle my-6 rounded-md border">
+              <div className="border-subtle my-6 rounded-md border ">
+                {schedule?.timeBlock && <TimeBlock />}
+              </div>
+            ) : (
+              <></>
+            )}
+            {!isPlatform ? (
+              <div className="border-subtle my-6 rounded-md border ">
                 {schedule?.workingHours && (
                   <DateOverride
                     workingHours={schedule.workingHours}

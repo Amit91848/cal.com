@@ -85,6 +85,7 @@ export const updateHandler = async ({ input, ctx }: UpdateOptions) => {
     data: {
       timeZone: input.timeZone,
       name: input.name,
+      timeBlock: input.timeBlock,
       availability: {
         deleteMany: {
           scheduleId: {

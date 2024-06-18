@@ -67,6 +67,12 @@ export function ScheduleListItem({
                     <br />
                   </Fragment>
                 ))}
+              {schedule.timeBlock.length > 0 && (
+                <p className="my-1 flex items-center first-letter:text-xs">
+                  {t("timeblock")}: {schedule.timeBlock.map((block) => `"${block}"`).join(", ")}
+                </p>
+
+              )}
               {(schedule.timeZone || displayOptions?.timeZone) && (
                 <p className="my-1 flex items-center first-letter:text-xs">
                   <Icon name="globe" className="h-3.5 w-3.5" />

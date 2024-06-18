@@ -21,6 +21,7 @@ export const listHandler = async ({ ctx }: ListOptions) => {
       name: true,
       availability: true,
       timeZone: true,
+      timeBlock: true,
     },
     orderBy: {
       id: "asc",

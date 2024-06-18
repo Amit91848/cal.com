@@ -5,6 +5,7 @@ export const ZUpdateInputSchema = z.object({
   timeZone: z.string().optional(),
   name: z.string().optional(),
   isDefault: z.boolean().optional(),
+  timeBlock: z.array(z.string()).optional(),
   schedule: z
     .array(
       z.array(
