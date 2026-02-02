@@ -1,46 +1,16 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/calendar-subscriptions",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/calendar-subscriptions-cleanup",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/queuedFormResponseCleanup",
-      "schedule": "0 */12 * * *"
-    },
-    {
-      "path": "/api/tasks/cron",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/tasks/cleanup",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/credentials",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/selected-calendars",
-      "schedule": "*/5 * * * *"
-    }
-  ],
   "functions": {
     "app/api/cron/workflows/scheduleEmailReminders/route.ts": {
-      "maxDuration": 800
+      "maxDuration": 300
     },
     "app/api/cron/workflows/scheduleSMSReminders/route.ts": {
-      "maxDuration": 800
+      "maxDuration": 300
     },
     "app/api/cron/workflows/scheduleWhatsappReminders/route.ts": {
-      "maxDuration": 800
+      "maxDuration": 300
     },
     "pages/api/trpc/workflows/[trpc].ts": {
-      "maxDuration": 800
+      "maxDuration": 300
     }
   }
 }
